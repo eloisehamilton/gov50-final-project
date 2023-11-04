@@ -93,7 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <meta property="description" itemprop="description" content="My final project"/>
 
 
-  <meta name="article:author" content="Ellie H"/>
+  <meta name="article:author" content="Ellie Hamilton"/>
+
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Gov 50 Final Project"/>
   <meta property="og:type" content="article"/>
@@ -114,7 +115,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-4-1.png","index_files/figure-html5/unnamed-chunk-4-2.png","index_files/figure-html5/unnamed-chunk-7-1.png","index_files/figure-html5/unnamed-chunk-9-1.png","index_files/header-attrs-2.17/header-attrs.js","index_files/header-attrs-2.24/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js","startupdata.csv"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1518,9 +1519,36 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <div class="d-article">
 <h2 id="project-thoughts">Project thoughts</h2>
 <p>I am interested in exploring data related to what predicts the success of start ups and new companies.</p>
-<p> Data source and my proposal: 
+<p>Data source and my proposal:</p>
+<p>What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup’s product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of “milestones” a company had. It also has a binary variable in the dataset representing whether and acquisition occured or not. My hypothesis is that funding in early rounds of a company’s money raising procces determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup’s idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: <a href="https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data" class="uri">https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data</a></p>
+<div class="layout-chunk" data-layout="l-body">
 
-What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup's product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of "milestones" a company had. It also has a binary variable in the dataset representing whether and acquisition occured or not. My hypothesis is that funding in early rounds of a company's money raising procces determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called  has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data </p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<h2 id="visualizations">Visualizations</h2>
+<div class="layout-chunk" data-layout="l-body">
+<p><img src="index_files/figure-html5/unnamed-chunk-4-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<p><img src="index_files/figure-html5/unnamed-chunk-7-1.png" width="624" /></p>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<p><img src="index_files/figure-html5/unnamed-chunk-9-1.png" width="624" /></p>
+</div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->

@@ -17,7 +17,7 @@ Data source and my proposal:
 
 What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup's product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of "milestones" a company had. It also has a binary variable in the dataset representing whether and acquisition occured or not. My hypothesis is that funding in early rounds of a company's money raising procces determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called  has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data 
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(readr)
 library(tidyverse)
 library(dplyr)
@@ -25,37 +25,26 @@ library(dplyr)
 #import data
 startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50/gov50-final-project/startupdata.csv")
 
-startupdata
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
 
-startupdata
-
-
 ```
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 startupdata <- startupdata |>
   mutate(
     Acquired = ifelse(status == "acquired", 1, 0)
   )
 
-startupdata
 ```
 
-```{r}
+
+## Visualizations 
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(ggplot2)
-
-ggplot(startupdata, aes(x = status, y = length_of_funding)) +
-  geom_boxplot() +
-  labs(title = "Length of Funding by Startup Status",
-       x = "Startup Status",
-       y = "Length of Funding (in years)") +
-  theme_minimal()
-
 
 # Boxplot for funding_in_usd by status
 
@@ -67,22 +56,20 @@ ggplot(startupdata, aes(x = status, y = funding_total_usd)) +
   scale_y_continuous(labels = scales::dollar_format(), limits = c(0, 150000000)) +
 theme_minimal()
 ```
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-
-
-
-startupdata |>
+result <- startupdata |>
   group_by(Acquired) |>
   summarize(
     avg_age_first_funding = mean(age_first_funding_year),
     avg_funding = mean(funding_total_usd),
     avg_length_funding = mean(length_of_funding)
-    
   )
 
 ```
-```{r}
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 startupdata <- startupdata |>
   mutate(
@@ -99,11 +86,9 @@ acquired_vc_table <- startupdata |>
     names_from = status,
     values_from = prop )
 
-acquired_vc_table
-
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 data_long <- acquired_vc_table %>%
   pivot_longer(cols = -VC_Funding, names_to = "Status", values_to = "prop")
@@ -117,7 +102,7 @@ ggplot(data_long, aes(x = Status, y = prop, fill = VC_Funding)) +
   scale_fill_brewer(palette = "Set2") 
  
 ```
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 startupdata <- startupdata |>
   mutate(
     Angel_Funding = ifelse(has_angel == 1, "Has Angel Funding", "No Angel Funding")
@@ -132,12 +117,9 @@ acquired_angel_table <- startupdata |>
   pivot_wider(
     names_from = status,
     values_from = prop )
-
-acquired_angel_table
-
 ```
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 data_long_angel <- acquired_angel_table %>%
   pivot_longer(cols = -Angel_Funding, names_to = "Status", values_to = "prop")
 
