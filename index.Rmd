@@ -15,7 +15,7 @@ I am interested in exploring data related to what predicts the success of start 
 
 Data source and my proposal: 
 
-What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup's product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of "milestones" a company had. It also has a binary variable in the dataset representing whether and acquisition occured or not. My hypothesis is that funding in early rounds of a company's money raising procces determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called  has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data 
+What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup's product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of "milestones" a company had. It also has a binary variable in the dataset representing whether and acquisition occurred or not. My hypothesis is that funding in early rounds of a company's money raising processes determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called  has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(readr)
@@ -32,7 +32,46 @@ startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50/gov50-final-project/
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
 
+head(startupdata)
+
 ```
+## Cleaning the data -- imputing for missing values 
+
+```{r}
+for (col in names(startupdata)) {
+  if (is.numeric(startupdata[[col]])) {
+    startupdata[[col]][is.na(startupdata[[col]])] <- median(startupdata[[col]], na.rm = TRUE)
+  }
+}
+
+# Convert categorical variables to factor
+categorical_cols <- c("state_code", "city", "category_code", "zip_code", "is_CA", "is_NY", "is_MA", "is_TX", "is_otherstate", "is_software", "is_web", "is_mobile", "is_enterprise", "is_advertising", "is_gamesvideo", "is_ecommerce", "is_biotech", "is_consulting", "is_othercategory", "has_VC", "has_angel", "has_roundA", "has_roundB", "has_roundC", "has_roundD")
+
+startupdata[categorical_cols] <- lapply(startupdata[categorical_cols], factor)
+
+# Feature Engineering (Example: Total funding)
+startupdata$total_funding <- startupdata$funding_rounds * startupdata$funding_total_usd
+
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+# Replace NA with mode for categorical variables
+for (col in categorical_cols) {
+  mode_value <- getmode(startupdata[[col]][!is.na(startupdata[[col]])])
+  startupdata[[col]][is.na(startupdata[[col]])] <- mode_value
+}
+
+startupdata
+
+na_count <- sapply(startupdata, function(x) sum(is.na(x)))
+na_count
+```
+
+
+
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 startupdata <- startupdata |>
   mutate(
@@ -42,20 +81,171 @@ startupdata <- startupdata |>
 ```
 
 
-## Visualizations 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(ggplot2)
 
-# Boxplot for funding_in_usd by status
 
-ggplot(startupdata, aes(x = status, y = funding_total_usd)) +
-  geom_boxplot(aes(fill = status)) +
-  labs(title = "Total Funding in USD vs Acquisition Status",
-       x = "Acquisition Status",
-       y = "Funding in USD") +
-  scale_y_continuous(labels = scales::dollar_format(), limits = c(0, 150000000)) +
-theme_minimal()
+## Use Lasso regression to decrease predictor numbers -- look at Pset 
+
+```{r}
+library(caret)
+
+# Set seed for reproducibility
+set.seed(121)
+
+# Load data
+# Ensure to replace "path/to/your/data.csv" with the actual path to your dataset
+
+# Split data into training and testing sets
+# Assuming 'Acquired' is your binary response variable
+splitIndex <- createDataPartition(startupdata$Acquired, p = 0.80, list = FALSE, times = 1)
+
+# Creating training and testing sets
+train_data <- startupdata[splitIndex, ]
+test_data <- startupdata[-splitIndex, ]
+
+# Print the dimensions of the original and split datasets
+print(dim(startupdata))
+print(dim(train_data))
+print(dim(test_data))
+
+# Separate X (predictors) and y (response)
+X_train <- train_data %>% dplyr::select(-Acquired)
+y_train <- train_data$Acquired
+X_test <- test_data %>% dplyr::select(-Acquired)
+y_test <- test_data$Acquired
+
+
 ```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+# and 'Acquired' is your binary response variable
+
+# Fit logistic regression model
+model <- glm(Acquired ~ age_first_funding_year + length_of_funding + funding_total_usd, 
+                data = train_data, 
+                family = binomial())
+
+# Extract model coefficients
+model_intercept <- coef(model)[1]
+model_coef_age_first_funding_year <- coef(model)[2]
+model_coef_length_of_funding <- coef(model)[3]
+model_coef_funding_total_usd <- coef(model)[4]
+
+# Make predictions on training and test data
+y_train_pred <- predict(model, newdata = train_data, type = "response") > 0.5
+y_test_pred <- predict(model, newdata = test_data, type = "response") > 0.5
+
+# Calculate classification accuracies
+acc_train_logit2_3 <- mean(y_train_pred == train_data$Acquired)
+acc_test_logit2_3 <- mean(y_test_pred == test_data$Acquired)
+
+# Print the results
+cat("The intercept and coefficients for the model are:\n")
+cat(sprintf("\t%-20s %7.4f\n", "intercept", model_intercept))
+cat(sprintf("\t%-20s %7.4f\n", "age_first_funding_year", model_coef_age_first_funding_year))
+cat(sprintf("\t%-20s %7.4f\n", "length_of_funding", model_coef_length_of_funding))
+cat(sprintf("\t%-20s %7.4f\n", "funding_total_usd", model_coef_funding_total_usd))
+
+cat("\nThe classification accuracies for 'logit2_3' are:\n\n")
+cat(sprintf("\tTrain\t%.4f\n", acc_train_logit2_3))
+cat(sprintf("\tTEST\t%.4f\n", acc_test_logit2_3))
+```
+Interpretation: age_first_funding_year -0.0597 Practically, this suggests a negative relationship between the age of a startup at first funding and its chances of being acquired: older startups at the time of first funding are slightly less likely to be acquired, according to this model.
+
+Interpretation: length_of_funding (0.1774): The positive coefficient implies that for each additional unit increase in length_of_funding, the log odds of being Acquired increases by 0.1774, with other variables constant.This indicates a positive relationship; longer funding periods are associated with a higher likelihood of acquisition.
+
+## Scaling non-binary predictors
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# List of non-binary predictors
+non_binary_predictors <- c("age_first_funding_year", "funding_rounds", "funding_total_usd", "length_of_funding")
+
+# Apply standard scaling to non-binary predictors
+# Scale the non-binary predictors in the training data
+train_data_scaled <- scale(train_data[non_binary_predictors])
+
+# Scale the non-binary predictors in the test data
+# It's important to use the same scaling parameters from the training data
+test_data_scaled <- scale(test_data[non_binary_predictors], center = attr(train_data_scaled, "scaled:center"), 
+                          scale = attr(train_data_scaled, "scaled:scale"))
+
+# Replace the non-binary columns in train_data and test_data with the scaled version
+train_data[non_binary_predictors] <- train_data_scaled
+test_data[non_binary_predictors] <- test_data_scaled
+
+```
+
+## Lasso regression with scaled non-binary predictors 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+# Load necessary library
+library(glmnet)
+
+# Assuming your dataset is stored in 'train_data' and 'test_data'
+
+# Prepare the dataset
+predictor_list <- c("age_first_funding_year", "funding_rounds", "funding_total_usd", "length_of_funding",
+                    "is_CA", "is_software", "has_VC", "has_angel", "has_roundD", "is_TX")
+
+# Convert to model matrix
+X_train <- model.matrix(~ . - 1, data = train_data[, predictor_list])
+y_train <- train_data$Acquired
+X_test <- model.matrix(~ . - 1, data = test_data[, predictor_list])
+y_test <- test_data$Acquired
+
+# Define the regularization strengths
+lambda_list <- 10^seq(-4, 4, by = 1)
+
+# Fit Lasso logistic regression
+logit_lasso <- cv.glmnet(X_train, y_train, alpha = 1, lambda = lambda_list, family = "binomial")
+
+# Predict on training and test data
+y_train_pred <- predict(logit_lasso, newx = X_train, type = "class")
+y_test_pred <- predict(logit_lasso, newx = X_test, type = "class")
+
+# Calculate classification accuracies
+logit_lasso_train_acc <- mean(y_train_pred == y_train)
+logit_lasso_test_acc <- mean(y_test_pred == y_test)
+
+# Print the results
+cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
+print(coef(logit_lasso, s = "lambda.min"))
+
+cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
+cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
+cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
+```
+## Visualizations 
+```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+ggplot(startupdata, aes(x = age_first_funding_year, y = Acquired)) +
+    geom_point(alpha = 0.5) +  # Plot the points
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
+    ylab("Probability of Being Acquired") +
+    xlab("Age at First Funding (Years)") +
+    ggtitle("Relationship Between Age at First Funding and Likelihood of Acquisition") +
+    theme_minimal()
+```
+This visualization attempts to answer my research question: what factors predict whether or not a company will be acquired? As displayed by the graph, we see a negative relationship between the age of a startup at first funding and its chances of being acquired: the older startups are when they recieve funding for the first time, the less likely they are to be acquired, according to this graph. This is visualization is in line with my hypothesis which states that the younger start ups are when they first receive funding, they are more likely to be acquired. 
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+# Creating a summary dataset for plotting
+summary_data <- startupdata %>%
+    group_by(has_roundD) %>%
+    summarise(Proportion_Acquired = mean(Acquired)) %>%
+    mutate(has_roundD = ifelse(has_roundD == 1, "Reached Round D", "Did Not Reach Round D"))
+
+# Plot
+ggplot(summary_data, aes(x = has_roundD, y = Proportion_Acquired, fill = has_roundD)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    ylab("Proportion of Startups Acquired") +
+    xlab("Funding Round D Status") +
+    ggtitle("Impact of Reaching Funding Round D on Startup Acquisition") +
+    scale_fill_manual(values = c("blue", "red")) +
+    theme_minimal()
+```
+This visualization also attempts to answer my research question. Based on the data and the visualization, start ups that have reached series D funding are slightly more likely to be acquired. This provides some evidence behind what factors contribute to a start up being acquired. 
+
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 result <- startupdata |>
