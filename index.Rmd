@@ -32,12 +32,11 @@ startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50/gov50-final-project/
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
 
-head(startupdata)
 
 ```
-## Cleaning the data -- imputing for missing values 
 
-```{r}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 for (col in names(startupdata)) {
   if (is.numeric(startupdata[[col]])) {
     startupdata[[col]][is.na(startupdata[[col]])] <- median(startupdata[[col]], na.rm = TRUE)
@@ -63,10 +62,10 @@ for (col in categorical_cols) {
   startupdata[[col]][is.na(startupdata[[col]])] <- mode_value
 }
 
-startupdata
+
 
 na_count <- sapply(startupdata, function(x) sum(is.na(x)))
-na_count
+
 ```
 
 
@@ -83,9 +82,9 @@ startupdata <- startupdata |>
 
 
 
-## Use Lasso regression to decrease predictor numbers -- look at Pset 
 
-```{r}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(caret)
 
 # Set seed for reproducibility
@@ -103,9 +102,9 @@ train_data <- startupdata[splitIndex, ]
 test_data <- startupdata[-splitIndex, ]
 
 # Print the dimensions of the original and split datasets
-print(dim(startupdata))
-print(dim(train_data))
-print(dim(test_data))
+#print(dim(startupdata))
+#print(dim(train_data))
+#print(dim(test_data))
 
 # Separate X (predictors) and y (response)
 X_train <- train_data %>% dplyr::select(-Acquired)
@@ -116,7 +115,7 @@ y_test <- test_data$Acquired
 
 ```
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # and 'Acquired' is your binary response variable
 
 # Fit logistic regression model
@@ -139,21 +138,18 @@ acc_train_logit2_3 <- mean(y_train_pred == train_data$Acquired)
 acc_test_logit2_3 <- mean(y_test_pred == test_data$Acquired)
 
 # Print the results
-cat("The intercept and coefficients for the model are:\n")
-cat(sprintf("\t%-20s %7.4f\n", "intercept", model_intercept))
-cat(sprintf("\t%-20s %7.4f\n", "age_first_funding_year", model_coef_age_first_funding_year))
-cat(sprintf("\t%-20s %7.4f\n", "length_of_funding", model_coef_length_of_funding))
-cat(sprintf("\t%-20s %7.4f\n", "funding_total_usd", model_coef_funding_total_usd))
+#cat("The intercept and coefficients for the model are:\n")
+#cat(sprintf("\t%-20s %7.4f\n", "intercept", model_intercept))
+#cat(sprintf("\t%-20s %7.4f\n", "age_first_funding_year", model_coef_age_first_funding_year))
+#cat(sprintf("\t%-20s %7.4f\n", "length_of_funding", model_coef_length_of_funding))
+#cat(sprintf("\t%-20s %7.4f\n", "funding_total_usd", model_coef_funding_total_usd))
 
-cat("\nThe classification accuracies for 'logit2_3' are:\n\n")
-cat(sprintf("\tTrain\t%.4f\n", acc_train_logit2_3))
-cat(sprintf("\tTEST\t%.4f\n", acc_test_logit2_3))
+#cat("\nThe classification accuracies for 'logit2_3' are:\n\n")
+#cat(sprintf("\tTrain\t%.4f\n", acc_train_logit2_3))
+#cat(sprintf("\tTEST\t%.4f\n", acc_test_logit2_3))
 ```
-Interpretation: age_first_funding_year -0.0597 Practically, this suggests a negative relationship between the age of a startup at first funding and its chances of being acquired: older startups at the time of first funding are slightly less likely to be acquired, according to this model.
 
-Interpretation: length_of_funding (0.1774): The positive coefficient implies that for each additional unit increase in length_of_funding, the log odds of being Acquired increases by 0.1774, with other variables constant.This indicates a positive relationship; longer funding periods are associated with a higher likelihood of acquisition.
 
-## Scaling non-binary predictors
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # List of non-binary predictors
@@ -174,9 +170,9 @@ test_data[non_binary_predictors] <- test_data_scaled
 
 ```
 
-## Lasso regression with scaled non-binary predictors 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Load necessary library
 library(glmnet)
 
@@ -207,15 +203,15 @@ logit_lasso_train_acc <- mean(y_train_pred == y_train)
 logit_lasso_test_acc <- mean(y_test_pred == y_test)
 
 # Print the results
-cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
-print(coef(logit_lasso, s = "lambda.min"))
+#cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
+#print(coef(logit_lasso, s = "lambda.min"))
 
-cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
-cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
-cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
+#cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
+#cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
+#cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
 ```
 ## Visualizations 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(startupdata, aes(x = age_first_funding_year, y = Acquired)) +
     geom_point(alpha = 0.5) +  # Plot the points
     geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
@@ -227,7 +223,7 @@ ggplot(startupdata, aes(x = age_first_funding_year, y = Acquired)) +
 This visualization attempts to answer my research question: what factors predict whether or not a company will be acquired? As displayed by the graph, we see a negative relationship between the age of a startup at first funding and its chances of being acquired: the older startups are when they recieve funding for the first time, the less likely they are to be acquired, according to this graph. This is visualization is in line with my hypothesis which states that the younger start ups are when they first receive funding, they are more likely to be acquired. 
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 # Creating a summary dataset for plotting
 summary_data <- startupdata %>%
     group_by(has_roundD) %>%
