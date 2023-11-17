@@ -211,7 +211,7 @@ logit_lasso_test_acc <- mean(y_test_pred == y_test)
 #cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
 ```
 ## Visualizations 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 ggplot(startupdata, aes(x = age_first_funding_year, y = Acquired)) +
     geom_point(alpha = 0.5) +  # Plot the points
     geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
