@@ -162,6 +162,8 @@ ggplot(data = as.data.frame(acquired_counts), aes(x = Var1, y = Freq)) +
 
   I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.  
 
+Note: I know these regression techniques were not taught in Gov50, but I learned them  while taking CS109a this semester and wanted to use them in this analysis.
+
 
 ```{r}
 library(glmnet)
