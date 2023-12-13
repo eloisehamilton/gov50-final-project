@@ -62,12 +62,12 @@ for (col in names(startupdata)) {
   }
 }
 
-# Convert categorical variables to factor
+# convert categorical variables 
 categorical_cols <- c("state_code", "city", "category_code", "zip_code", "is_CA", "is_NY", "is_MA", "is_TX", "is_otherstate", "is_software", "is_web", "is_mobile", "is_enterprise", "is_advertising", "is_gamesvideo", "is_ecommerce", "is_biotech", "is_consulting", "is_othercategory", "has_VC", "has_angel", "has_roundA", "has_roundB", "has_roundC", "has_roundD")
 
 startupdata[categorical_cols] <- lapply(startupdata[categorical_cols], factor)
 
-# Feature Engineering (Example: Total funding)
+# some minor fature engineering
 startupdata$total_funding <- startupdata$funding_rounds * startupdata$funding_total_usd
 
 getmode <- function(v) {
@@ -75,7 +75,7 @@ getmode <- function(v) {
   uniqv[which.max(tabulate(match(v, uniqv)))]
 }
 
-# Replace NA with mode for categorical variables
+# replace NA with mode for categorical variables
 for (col in categorical_cols) {
   mode_value <- getmode(startupdata[[col]][!is.na(startupdata[[col]])])
   startupdata[[col]][is.na(startupdata[[col]])] <- mode_value
@@ -114,7 +114,7 @@ train_data <- startupdata[splitIndex, ]
 test_data <- startupdata[-splitIndex, ]
 
 
-# Separate X (predictors) and y (response)
+# separate X (predictors) and y (response)
 X_train <- train_data %>% dplyr::select(-Acquired)
 y_train <- train_data$Acquired
 X_test <- test_data %>% dplyr::select(-Acquired)
@@ -127,19 +127,17 @@ y_test <- test_data$Acquired
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-# List of non-binary predictors
+# non-binary predictors
 non_binary_predictors <- c("age_first_funding_year", "funding_rounds", "funding_total_usd", "length_of_funding")
 
-# Apply standard scaling to non-binary predictors
-# Scale the non-binary predictors in the training data
+# scale non-binary predictors in training data
 train_data_scaled <- scale(train_data[non_binary_predictors])
 
-# Scale the non-binary predictors in the test data
-# It's important to use the same scaling parameters from the training data
+# scale non-binary predictors in test data
 test_data_scaled <- scale(test_data[non_binary_predictors], center = attr(train_data_scaled, "scaled:center"), 
                           scale = attr(train_data_scaled, "scaled:scale"))
 
-# Replace the non-binary columns in train_data and test_data with the scaled version
+# replace non-binary columns in train_data and test_data with the scaled version
 train_data[non_binary_predictors] <- train_data_scaled
 test_data[non_binary_predictors] <- test_data_scaled
 
@@ -186,13 +184,13 @@ y_train <- train_data$Acquired
 X_test <- model.matrix(~ . - 1, data = test_data[, predictor_list])
 y_test <- test_data$Acquired
 
-# Determine regularization strengths
+# determine regularization strengths (lamda)
 lambda_list <- 10^seq(-4, 4, by = 1)
 
 set.seed(02138) 
 logit_lasso <- cv.glmnet(X_train, y_train, alpha = 1, lambda = lambda_list, family = "binomial", weights = train_weights)
 
-# Predict on training & test data
+# predict on training & test data
 y_train_pred <- predict(logit_lasso, newx = X_train, type = "class")
 y_test_pred <- predict(logit_lasso, newx = X_test, type = "class")
 
@@ -200,7 +198,7 @@ y_test_pred <- predict(logit_lasso, newx = X_test, type = "class")
 logit_lasso_train_acc <- mean(y_train_pred == y_train)
 logit_lasso_test_acc <- mean(y_test_pred == y_test)
 
-# Print
+# print
 cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
 print(coef(logit_lasso, s = "lambda.min"))
 
@@ -231,11 +229,11 @@ coefs <- matrix(NA, nrow = 1000, ncol = 17)
 for(i in 1:1000) {
   idx <- sample(nrow(train_data), replace = TRUE)
   coef <- sample_fit(train_data, idx)
-  # Convert coefficients to numeric vector before assigning
+  # convert coefficients to numeric vector before assigning
   coefs[i,] <- as.numeric(coef)
 }
 
-# Calculate confidence intervals
+# calc. CIs
 cis <- apply(coefs, 2, function(x) {
   quantile(x, c(0.025, 0.975))
 })
@@ -266,37 +264,36 @@ The confidence intervals calculated for the coefficients in this analysis are 95
   
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
-# Extract coefficients from the LASSO model
-# Extract coefficients from the LASSO model as a matrix
+
+# take coefficients from the LASSO model 
 coefficients_matrix <- as.matrix(coef(logit_lasso, s = "lambda.min"))
 
-# Extract row names (variable names)
+# extract row names (variable names)
 variable_names <- rownames(coefficients_matrix)
 
-# Exclude the intercept and 'is_CA0'
+# exclude the intercept and is_CA0 
 variable_names <- variable_names[variable_names != "(Intercept)" & variable_names != "is_CA0"]
 
-# Extract corresponding coefficients
+# extract corresponding coefficients
 original_coefs <- coefficients_matrix[variable_names, , drop = FALSE]
 
-# Convert to vector
+# convert to vector
 original_coefs_vector <- as.vector(original_coefs)
 
-# Check if lengths match
+# check if lengths match
 if (length(variable_names) != length(original_coefs_vector)) {
   stop("Mismatch in the number of variables and coefficients")
 }
 
 ci_df <- as.data.frame(t(cis_adjusted))
 
-## remove intercept and is_CA0 from confidence interval
 
-# Create the results table
+# results table
 results_table <- data.frame(
   Predictor_Variable = variable_names,
   Coefficient = original_coefs_vector,
-  CI_Lower = ci_df[, 1],  # Lower bound of confidence interval
-  CI_Upper = ci_df[, 2]    # Extracting the column as a vector
+  CI_Lower = ci_df[, 1],  
+  CI_Upper = ci_df[, 2]    
 )
 
 
@@ -305,7 +302,7 @@ results_table$Coefficient <- round(results_table$Coefficient, 3)
 results_table$CI_Lower <- round(results_table$CI_Lower, 3)
 results_table$CI_Upper <- round(results_table$CI_Upper, 3)
 
-# View the results
+# the results!!!
 kable(results_table, caption = "LASSO Regression Model Coefficient Outputs and Confidence Intervals", align = 'c', format = "markdown")
 
 ```
@@ -328,7 +325,7 @@ ggplot(results_table, aes(x = Predictor_Variable, y = Coefficient, fill = Statis
   labs(title = "LASSO Regression Coefficients with Confidence Intervals",
        x = "Predictors",
        y = "Coefficient Value") +
-  coord_flip()  # Flip the coordinates if horizontal layout is preferred
+  coord_flip()
 
 ```
 ## Conclusion 
