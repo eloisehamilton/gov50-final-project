@@ -37,7 +37,7 @@ The key independent variables are are as follow:
 "is_NY" - binary variable equal to one if the company is in NY and zero if not 
 "is_otherstate" - binary variable equal to one if the company is in another state other than CA, TX, MA, or NY and zero if not.  
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 library(readr)
 library(tidyverse)
 library(dplyr)
@@ -47,7 +47,7 @@ startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50 2/gov50-final-projec
 
 ```
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
@@ -55,7 +55,7 @@ startupdata <- startupdata |>
 ```
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 for (col in names(startupdata)) {
   if (is.numeric(startupdata[[col]])) {
     startupdata[[col]][is.na(startupdata[[col]])] <- median(startupdata[[col]], na.rm = TRUE)
@@ -90,7 +90,7 @@ na_count <- sapply(startupdata, function(x) sum(is.na(x)))
 
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 startupdata <- startupdata |>
   mutate(
     Acquired = ifelse(status == "acquired", 1, 0)
@@ -103,7 +103,7 @@ startupdata <- startupdata |>
 
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 library(caret)
 
 set.seed(02138)
@@ -126,7 +126,7 @@ y_test <- test_data$Acquired
 
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 # non-binary predictors
 non_binary_predictors <- c("age_first_funding_year", "funding_rounds", "funding_total_usd", "length_of_funding")
 
@@ -145,7 +145,7 @@ test_data[non_binary_predictors] <- test_data_scaled
 ```
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 acquired_counts <- table(startupdata$Acquired)
 ggplot(data = as.data.frame(acquired_counts), aes(x = Var1, y = Freq)) +
   geom_bar(stat = "identity") +
@@ -163,7 +163,7 @@ ggplot(data = as.data.frame(acquired_counts), aes(x = Var1, y = Freq)) +
   I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.  
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 library(glmnet)
 
 
@@ -210,7 +210,7 @@ cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
 ```
   After I determined the coefficients of my LASSO logistic regression model, I ran a bootstrap analysis to estimate the confidence intervals of these coefficients. Computing the confidence intervals for each coefficient, allowed me to determine which coefficients are statistically significant. 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 sample_fit <- function(data, idx) {
   with(data, {
     sample <- data[idx,] 
@@ -262,7 +262,7 @@ The confidence intervals calculated for the coefficients in this analysis are 95
   It is important to note that statistically significant coefficients from a LASSO regression model should NOT be interpreted causally. In the context of this analysis, statistical significance means that there is evidence that predictors has_roundD, has_roundA, is_otherstate, and has_roundB have an association (either positive or negative) with the response variable, Acquired. However, establishing causality requires doing more analysis. A difference-in-differences analysis or a randomized control study, for example, would control for all unobserved confounders and could help us determine causality. In my analysis, we have determined that correlation exists between statistically significant variables and the response variable, Acquired. We have not, however, determined causation because we have not controlled for confounding that might exist. 
   
   
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 library(knitr)
 
 # take coefficients from the LASSO model 
@@ -312,7 +312,7 @@ kable(results_table, caption = "LASSO Regression Model Coefficient Outputs and C
   The plot visually reinforces the information presented in the regression table by displaying the coefficients of the predictors along with their confidence intervals, and highlighting which coefficients are statistically significant. As mentioned above, has_roundD, has_roundA, is_otherstate, and has_roundB are the only statistically significant predictors. I was surprised to see how little of an effect the total amount funding a company gets has on its acquisition potential. Since, this is not a statistically significant predictor, we can't say what type of effect it has for certain, but based on this initial analysis, it seems like the amount of total funding a company gets isn't THAT determinate of its potential to be acquired. 
 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r}
 ggplot(results_table, aes(x = Predictor_Variable, y = Coefficient, fill = Statistically_Significant)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.25) +
