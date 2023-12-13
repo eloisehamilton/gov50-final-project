@@ -52,7 +52,6 @@ startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50 2/gov50-final-projec
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
 
-startupdata
 ```
 
 
@@ -159,6 +158,12 @@ ggplot(data = as.data.frame(acquired_counts), aes(x = Var1, y = Freq)) +
   The above a bar plot describes the dependent variable, Acquired. Because Acquired is binary, this plot counts the frequency of observations in the dataset that were Acquired (Acquired = 1) or Closed (Acquired = 0). As we can see, this variable is unbalanced. There are far more companies in the dataset that have been acquired than have closed down. Therefore, before doing a LASSO regression analysis, I must weight the dependent variables that are equal to zero more than those equal to one.
 
 
+## Results
+
+#### Brief overview of my code: 
+
+  I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.  
+
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(glmnet)
@@ -202,8 +207,10 @@ print(coef(logit_lasso, s = "lambda.min"))
 cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
 cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
 cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
-```
 
+
+```
+  After I determined the coefficients of my LASSO logistic regression model, I ran a bootstrap analysis to estimate the confidence intervals of these coefficients. Computing the confidence intervals for each coefficient, allowed me to determine which coefficients are statistically significant. 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 sample_fit <- function(data, idx) {
@@ -233,71 +240,83 @@ cis <- apply(coefs, 2, function(x) {
   quantile(x, c(0.025, 0.975))
 })
 
+
+cis_adjusted <- cis[, -c(1, 6)]
+
+
 ```
-## Results
 
-Brief overview of my code: 
+#### Description and Interpretation of My Regression Output:
 
-  I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.  
+ I created a table called “LASSO Regression Model Coefficient Outputs and Confidence Intervals table” which displays the coefficient estimations of each predictor variable, the confidence interval of the coefficient and says whether or not it is statistically significant. I examined 15 predictor variables, whose estimated coefficients can be seen in the column entitled “Predictor_Variable.” The larger the magnitude of a coefficient, the larger effect it has on the dependent variable, acquired. The lasso model brought predictors is_CA, and has_angel to zero. This means that whether or not it exists in the state of California, or whether or not it has angel funding, have no impact on a company being acquired or not. 
+ 
+  From this table, we see that only 4 predictors out of the 15 are statistically significant. These include has_roundA, has_roundB, has_roundD, and is_otherstate. Out of these three, the strongest predictor of Acquired is has_roundD, with a coefficient of 0.887, indicating a substantial positive impact on a company being acquired. If a company is able to make it to series D funding, it is more likely to be acquired. Holding all other variables constant, having completed Round D funding is associated with an increase in the log odds of being 'Acquired' by 0.887 units. This coefficient has a confidence interval from 0.014 to 0.233. Because zero is not included in this range, this variable is statistically significant. 
+  
+  The second strongest predictor of Acquired is has_roundA, with a coefficient of 0.545. This indicates that if a company is able to secure series A funding– which is one of the earliest forms of funding a company can get – it is more likely to be acquired.  Holding all other variables constant, having completed Round A funding is associated with an increase in the log odds of being 'Acquired' by 0.545 units. This coefficient’s confidence interval ranges from 0.031 to 0.183, not including zero, suggesting a positive influence on the outcome. Because zero is not included in this range, this variable is statistically significant. 
+  
+  The third strongest predictor of Acquired is is_otherstate, with a coefficient of -0.505. This indicates that if a startup is located in a state other than California, Massachusetts, New York or Texas, it is less likely to be acquired. Holding all other variables constant, if is_otherstate is equaling 1 is associated with a decrease in the log odds of being ‘Acquired’ by 0.505 units. This negative coefficient is statistically significant since its confidence interval is entirely below zero (-0.207 to -0.036), suggesting a negative association with the outcome, acquired.
+  
+  The fourth strongest predictor of Acquired is has_roundB1, with a coefficient of .429. This indicates that if a start up gets series B funding, it is more likely to be acquired. Holding all other variables constant, having completed Round B funding is associated with an increase in the log odds of being 'Acquired' by 0.429 units. This coefficient has a confidence interval from 0.005 to 0.156. Because zero is not included in this range, this variable is statistically significant. 
+  
+  All other predictors have confidence intervals that include zero, marking them as statistically non-significant according to this analysis. This means we cannot confidently say they have an effect on whether or not a company is acquired , given the data. 
+The confidence intervals calculated for the coefficients in this analysis are 95% confidence intervals. This means that if we were to repeat this study many times, we would expect the true coefficient value to fall within this range 95% of the time, under the assumption that the model and its assumptions are correct. The alpha level (α) of 0.05 is used in this analysis, representing a 5% risk of concluding that a coefficient is statistically significant when it is not (Type I error).
 
-  After I determined the coefficients of my LASSO logistic regression model, I ran a bootstrap analysis to estimate the confidence intervals of these coefficients. Computing the confidence intervals for each coefficient, allowed me to determine which coefficients are statistically significant. 
-
-
+  It is important to note that statistically significant coefficients from a LASSO regression model should NOT be interpreted causally. In the context of this analysis, statistical significance means that there is evidence that predictors has_roundD, has_roundA, is_otherstate, and has_roundB have an association (either positive or negative) with the response variable, Acquired. However, establishing causality requires doing more analysis. A difference-in-differences analysis or a randomized control study, for example, would control for all unobserved confounders and could help us determine causality. In my analysis, we have determined that correlation exists between statistically significant variables and the response variable, Acquired. We have not, however, determined causation because we have not controlled for confounding that might exist. 
+  
+  
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
 # Extract coefficients from the LASSO model
-lasso_coefs <- coef(logit_lasso, s = "lambda.min")
+# Extract coefficients from the LASSO model as a matrix
+coefficients_matrix <- as.matrix(coef(logit_lasso, s = "lambda.min"))
 
-# Convert to a regular vector and exclude the intercept
-original_coefs <- as.vector(lasso_coefs)[-1] # Drop the first element (intercept)
+# Extract row names (variable names)
+variable_names <- rownames(coefficients_matrix)
 
-# Ensure the lengths of var_names and original_coefs match
-if (length(var_names) != length(original_coefs)) {
+# Exclude the intercept and 'is_CA0'
+variable_names <- variable_names[variable_names != "(Intercept)" & variable_names != "is_CA0"]
+
+# Extract corresponding coefficients
+original_coefs <- coefficients_matrix[variable_names, , drop = FALSE]
+
+# Convert to vector
+original_coefs_vector <- as.vector(original_coefs)
+
+# Check if lengths match
+if (length(variable_names) != length(original_coefs_vector)) {
   stop("Mismatch in the number of variables and coefficients")
 }
-# Calculate the confidence intervals for each coefficient
-cis <- apply(coefs[, -1], 2, function(x) { # Excluding intercept from the bootstrapped coefficients
-  quantile(na.omit(x), c(0.025, 0.975))  
-})
 
-# Convert the confidence intervals to a data frame
-ci_df <- as.data.frame(t(cis))
+ci_df <- as.data.frame(t(cis_adjusted))
 
-# Create a results table
+## remove intercept and is_CA0 from confidence interval
+
+# Create the results table
 results_table <- data.frame(
-  Predictor_Variable = var_names,
-  Coefficient = original_coefs,
-  CI_Lower = ci_df[, 1],
-  CI_Upper = ci_df[, 2]
+  Predictor_Variable = variable_names,
+  Coefficient = original_coefs_vector,
+  CI_Lower = ci_df[, 1],  # Lower bound of confidence interval
+  CI_Upper = ci_df[, 2]    # Extracting the column as a vector
 )
+
 
 results_table$Statistically_Significant <- with(results_table, CI_Lower * CI_Upper > 0)
 results_table$Coefficient <- round(results_table$Coefficient, 3)
 results_table$CI_Lower <- round(results_table$CI_Lower, 3)
 results_table$CI_Upper <- round(results_table$CI_Upper, 3)
+
 # View the results
 kable(results_table, caption = "LASSO Regression Model Coefficient Outputs and Confidence Intervals", align = 'c', format = "markdown")
+
 ```
-Description and Interpretation of My Regression Output:
 
-  I created a table called “LASSO Regression Model Coefficient Outputs and Confidence Intervals table” which displays the coefficient estimations of each predictor variable, the confidence interval of the coefficient and says whether or not it is statistically significant. I examined 15 predictor variables, whose estimated coefficients can be seen in the column entitled “Predictor_Variable.” The larger the magnitude of a coefficient, the larger effect it has on the dependent variable, acquired. The lasso model brought predictors funding_rounds, length_of_funding, is_CA, and has_angel to zero. This means that the number of funding rounds a company has, how long it has had funding for, whether or not it exists in the state of California, or whether or not it has angel funding, have no impact on a company being acquired or not. 
-  From this table, we see that only three predictors out of the 15 are statistically significant. These include has_roundA, has_roundD, and is_otherstate. Out of these three, the strongest predictor of Acquired is has_roundD, with a coefficient of 1.130, indicating a substantial positive impact on a company being acquired. If a company is able to make it to series D funding, it is more likely to be acquired. Holding all other variables constant, having completed Round D funding is associated with an increase in the log odds of being 'Acquired' by 1.130 units. This coefficient has a confidence interval from 0.075 to 0.270. Because zero is not included in this range, this variable is statistically significant.
+#### Plot of main analysis: 
 
-  The second strongest predictor of Acquired is has_roundA, with a coefficient of 0.545. This indicates that if a company is able to secure series A funding– which is one of the earliest forms of funding a company can get – it is more likely to be acquired.  Holding all other variables constant, having completed Round A funding is associated with an increase in the log odds of being 'Acquired' by 0.545 units. This coefficient’s confidence interval ranges from 0.031 to 0.183, not including zero, suggesting a strong positive influence on the outcome. Because zero is not included in this range, this variable is statistically significant. 
+  The plot visually reinforces the information presented in the regression table by displaying the coefficients of the predictors along with their confidence intervals, and highlighting which coefficients are statistically significant. As mentioned above, has_roundD, has_roundA, is_otherstate, and has_roundB are the only statistically significant predictors. I was surprised to see how little of an effect the total amount funding a company gets has on its acquisition potential. Since, this is not a statistically significant predictor, we can't say what type of effect it has for certain, but based on this initial analysis, it seems like the amount of total funding a company gets isn't THAT determinate of its potential to be acquired. 
 
-  This outcome supports my hypothesis that the earlier a company is able to secure funding, the more likely it is to be acquired. However, given that a company’s ability to maintain funding until the D round, makes an even larger impact on a company being acquired, we see that early funding is not the only thing that matters. In fact, even earlier forms of financing, like angel funding (has_angel), is not a statistically significant predictor.
-
-  The third strongest predictor of Acquired is is_otherstate, with a coefficient of -0.505. This indicates that if a startup is located in a state other than California, Massachusetts, New York or Texas, it is less likely to be acquired. Holding all other variables constant, if is_otherstate is equaling 1 is associated with a decrease in the log odds of being ‘Acquired’ by 0.505 units. This negative coefficient is statistically significant since its confidence interval is entirely below zero (-0.207 to -0.036), suggesting a negative association with the outcome, acquired.
-
-  All other predictors have confidence intervals that include zero, marking them as statistically non-significant according to this analysis. This means we cannot confidently say they have an effect on whether or not a company is acquired , given the data. 
-It is important to note that statistically significant coefficients from a LASSO regression model should NOT be interpreted causally. In the context of this analysis, statistical significance means that there is evidence that predictors has_roundD, has_roundA, and is_otherstate have an association (either positive or negative) with the response variable, Acquired. However, establishing causality requires doing more analysis. A difference-in-differences analysis or a randomized control study, for example, would control for all unobserved confounders and could help us determine causality. In my analysis, we have determined that correlation exists between statistically significant variables and the response variable, Acquired. We have not, however, determined causation because we have not controlled for confounding that might exist. 
-
-Plot of main analysis: 
-
-  The below plot visually reinforces the information presented in the regression table by displaying the coefficients of the predictors along with their confidence intervals, and highlighting which coefficients are statistically significant. As mentioned above, has_roundD, has_roundA, and is_otherstate are the only statistically significant predictors. 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(results_table, aes(x = Variable, y = Original_Coefficient, fill = Statistically_Significant)) +
+ggplot(results_table, aes(x = Predictor_Variable, y = Coefficient, fill = Statistically_Significant)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.25) +
   scale_fill_manual(values = c("FALSE" = "red", "TRUE" = "blue"),
@@ -314,15 +333,17 @@ ggplot(results_table, aes(x = Variable, y = Original_Coefficient, fill = Statist
 ```
 ## Conclusion 
 
-Part (i) 
+#### Part (i) 
 
-  In my analysis, I have found that variables has_roundD, has_roundA, and is_otherstate have statistically significant associations with the response variable, Acquired. My results show that when a startup receives funding at the series D stage, which is one of the last stages a company can receive funding from a venture capital firm before IPOing, it is more likely to be acquired. Intuitively this makes sense, given that many companies that were bound to fail would have done so before reaching series D. Thus, the companies that make it this far are more likely to have proven track records or a market presence, which means they are more likely to be acquired. 
+  In my analysis, I have found that variables has_roundD, has_roundA, is_otherstate, and has_roundB have statistically significant associations with the response variable, Acquired. My results show that when a startup receives funding at the series D stage, which is one of the last stages a company can receive funding from a venture capital firm before IPOing, it is more likely to be acquired. Intuitively this makes sense, given that many companies that were bound to fail would have done so before reaching series D. Thus, the companies that make it this far are more likely to have proven track records or a market presence, which means they are more likely to be acquired. 
   
-  My results also show that when a startup receives funding at the series A stage, it is more likely to be acquired. In my dataset, series A funding is the earliest measured point a company could have received funding. This finding supports my hypothesis that companies who receive funding early on in their fundraising processes, are more likely to be acquired. However, as mentioned above, my hypothesis was not entirely correct, as it appears that receiving funding at later series, notably series D, is even more critical.
+  My results also show that when a startup receives funding at the series A stage, it is more likely to be acquired. In my dataset, series A funding is the earliest measured point a company could have received funding. This finding supports my hypothesis that companies who receive funding early on in their fundraising processes, are more likely to be acquired. However, as mentioned above, my hypothesis was not entirely correct, as it appears that receiving funding at later series, notably series D, is even more critical. Furthermore, this model shows that even earlier forms of financing, like angel funding (has_angel), is not a statistically significant predictor and is brought to zero by the lasso model. Though this analysis shows that there is some truth to my hypothesis that earlier funding leads to a company’s acquisition, it is not the whole story because having series B and D funding are also important determinates. 
   
   My results also indicate that when a startup is located outside of innovation hubs like California, New York, Massachusetts, and Texas, they are less likely to be acquired. This finding initially surprised me, but makes sense intuitively. Start ups outside of these known innovation hubs likely have less access to sources of funding because of a lower concentration of venture capital firms and investors in these areas, which might make it difficult to drive growth and ultimately be acquired. It is also likely that there are fewer networking opportunities outside of these cities, perhaps making it difficult to connect with potential partners or people who can facilitate deals. 
 
-Part (ii) 
+#### Part (ii) 
 
   There are several limitations in this analysis and threats to inference. First of all, there were several cases of missingness in my dataset. I imputed values for these missing numbers by taking the median of quantitative variables and the mode for categorical variables. However, I assumed that data was missing completely at random. If this was not the case, and the missingness instead related to other observed data or the missing data itself, ignoring these relationships may have skewed my analysis. Furthermore, while LASSO helped in variable selection by penalizing less important variables, there could still be confounding variables that are not included in the dataset. These unmeasured confounders can bias the estimated relationships. If I have more time and money, I would try to collect more comprehensive data to include potential confounders and apply causal inference techniques to better adjust for these. In addition, my current analysis does not establish causation. The statistically significant associations found by my LASSO model do not imply that the predictors cause the outcome. If I had more money and time I would design a randomized control trial to measure the factors that contribute to a start up’s acquisition more precisely.  
+
+
 
