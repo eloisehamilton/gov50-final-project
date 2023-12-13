@@ -1566,32 +1566,156 @@ The key dependent variable in my analysis is ‘Acquired’. This is a binary in
 “is_NY” - binary variable equal to one if the company is in NY and zero if not
 “is_otherstate” - binary variable equal to one if the company is in another state other than CA, TX, MA, or NY and zero if not.</p>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://readr.tidyverse.org'>readr</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'>#import data</span></span>
+<span><span class='va'>startupdata</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"/Users/elliehamilton/Desktop/Gov50 2/gov50-final-project/startupdata.csv"</span><span class='op'>)</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>startupdata</span> <span class='op'>&lt;-</span> <span class='va'>startupdata</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>length_of_funding <span class='op'>=</span> <span class='va'>age_last_funding_year</span> <span class='op'>-</span> <span class='va'>age_first_funding_year</span><span class='op'>)</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'>for</span> <span class='op'>(</span><span class='va'>col</span> <span class='kw'>in</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>is.numeric</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>    <span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/median.html'>median</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span>  <span class='op'>}</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># convert categorical variables </span></span>
+<span><span class='va'>categorical_cols</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"state_code"</span>, <span class='st'>"city"</span>, <span class='st'>"category_code"</span>, <span class='st'>"zip_code"</span>, <span class='st'>"is_CA"</span>, <span class='st'>"is_NY"</span>, <span class='st'>"is_MA"</span>, <span class='st'>"is_TX"</span>, <span class='st'>"is_otherstate"</span>, <span class='st'>"is_software"</span>, <span class='st'>"is_web"</span>, <span class='st'>"is_mobile"</span>, <span class='st'>"is_enterprise"</span>, <span class='st'>"is_advertising"</span>, <span class='st'>"is_gamesvideo"</span>, <span class='st'>"is_ecommerce"</span>, <span class='st'>"is_biotech"</span>, <span class='st'>"is_consulting"</span>, <span class='st'>"is_othercategory"</span>, <span class='st'>"has_VC"</span>, <span class='st'>"has_angel"</span>, <span class='st'>"has_roundA"</span>, <span class='st'>"has_roundB"</span>, <span class='st'>"has_roundC"</span>, <span class='st'>"has_roundD"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>startupdata</span><span class='op'>[</span><span class='va'>categorical_cols</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[</span><span class='va'>categorical_cols</span><span class='op'>]</span>, <span class='va'>factor</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># some minor fature engineering</span></span>
+<span><span class='va'>startupdata</span><span class='op'>$</span><span class='va'>total_funding</span> <span class='op'>&lt;-</span> <span class='va'>startupdata</span><span class='op'>$</span><span class='va'>funding_rounds</span> <span class='op'>*</span> <span class='va'>startupdata</span><span class='op'>$</span><span class='va'>funding_total_usd</span></span>
+<span></span>
+<span><span class='va'>getmode</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>v</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='va'>uniqv</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/unique.html'>unique</a></span><span class='op'>(</span><span class='va'>v</span><span class='op'>)</span></span>
+<span>  <span class='va'>uniqv</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.min.html'>which.max</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/tabulate.html'>tabulate</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/match.html'>match</a></span><span class='op'>(</span><span class='va'>v</span>, <span class='va'>uniqv</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span><span class='op'>]</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># replace NA with mode for categorical variables</span></span>
+<span><span class='kw'>for</span> <span class='op'>(</span><span class='va'>col</span> <span class='kw'>in</span> <span class='va'>categorical_cols</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='va'>mode_value</span> <span class='op'>&lt;-</span> <span class='fu'>getmode</span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>[</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span></span>
+<span>  <span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>[[</span><span class='va'>col</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>mode_value</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span></span>
+<span></span>
+<span><span class='va'>na_count</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>sapply</a></span><span class='op'>(</span><span class='va'>startupdata</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>startupdata</span> <span class='op'>&lt;-</span> <span class='va'>startupdata</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>    Acquired <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>status</span> <span class='op'>==</span> <span class='st'>"acquired"</span>, <span class='fl'>1</span>, <span class='fl'>0</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/topepo/caret/'>caret</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>02138</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># Split data into training / testing set</span></span>
+<span><span class='va'>splitIndex</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/caret/man/createDataPartition.html'>createDataPartition</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>$</span><span class='va'>Acquired</span>, p <span class='op'>=</span> <span class='fl'>0.80</span>, list <span class='op'>=</span> <span class='cn'>FALSE</span>, times <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></span>
+<span><span class='va'>train_data</span> <span class='op'>&lt;-</span> <span class='va'>startupdata</span><span class='op'>[</span><span class='va'>splitIndex</span>, <span class='op'>]</span></span>
+<span><span class='va'>test_data</span> <span class='op'>&lt;-</span> <span class='va'>startupdata</span><span class='op'>[</span><span class='op'>-</span><span class='va'>splitIndex</span>, <span class='op'>]</span></span>
+<span></span>
+<span></span>
+<span><span class='co'># separate X (predictors) and y (response)</span></span>
+<span><span class='va'>X_train</span> <span class='op'>&lt;-</span> <span class='va'>train_data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>Acquired</span><span class='op'>)</span></span>
+<span><span class='va'>y_train</span> <span class='op'>&lt;-</span> <span class='va'>train_data</span><span class='op'>$</span><span class='va'>Acquired</span></span>
+<span><span class='va'>X_test</span> <span class='op'>&lt;-</span> <span class='va'>test_data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'>dplyr</span><span class='fu'>::</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>Acquired</span><span class='op'>)</span></span>
+<span><span class='va'>y_test</span> <span class='op'>&lt;-</span> <span class='va'>test_data</span><span class='op'>$</span><span class='va'>Acquired</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># non-binary predictors</span></span>
+<span><span class='va'>non_binary_predictors</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"age_first_funding_year"</span>, <span class='st'>"funding_rounds"</span>, <span class='st'>"funding_total_usd"</span>, <span class='st'>"length_of_funding"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># scale non-binary predictors in training data</span></span>
+<span><span class='va'>train_data_scaled</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>train_data</span><span class='op'>[</span><span class='va'>non_binary_predictors</span><span class='op'>]</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># scale non-binary predictors in test data</span></span>
+<span><span class='va'>test_data_scaled</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>test_data</span><span class='op'>[</span><span class='va'>non_binary_predictors</span><span class='op'>]</span>, center <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span><span class='op'>(</span><span class='va'>train_data_scaled</span>, <span class='st'>"scaled:center"</span><span class='op'>)</span>, </span>
+<span>                          scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/attr.html'>attr</a></span><span class='op'>(</span><span class='va'>train_data_scaled</span>, <span class='st'>"scaled:scale"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># replace non-binary columns in train_data and test_data with the scaled version</span></span>
+<span><span class='va'>train_data</span><span class='op'>[</span><span class='va'>non_binary_predictors</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>train_data_scaled</span></span>
+<span><span class='va'>test_data</span><span class='op'>[</span><span class='va'>non_binary_predictors</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='va'>test_data_scaled</span></span></code></pre>
+</div>
 </div>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>acquired_counts</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>startupdata</span><span class='op'>$</span><span class='va'>Acquired</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='va'>acquired_counts</span><span class='op'>)</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>Var1</span>, y <span class='op'>=</span> <span class='va'>Freq</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"identity"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>xlab</a></span><span class='op'>(</span><span class='st'>"Acquired Status"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ylab</a></span><span class='op'>(</span><span class='st'>"Count"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ggtitle</a></span><span class='op'>(</span><span class='st'>"Distribution of Startup Acquisition Status"</span><span class='op'>)</span></span></code></pre>
+</div>
 <p><img src="index_files/figure-html5/unnamed-chunk-7-1.png" width="624" /></p>
 </div>
 <p>The above a bar plot describes the dependent variable, Acquired. Because Acquired is binary, this plot counts the frequency of observations in the dataset that were Acquired (Acquired = 1) or Closed (Acquired = 0). As we can see, this variable is unbalanced. There are far more companies in the dataset that have been acquired than have closed down. Therefore, before doing a LASSO regression analysis, I must weight the dependent variables that are equal to zero more than those equal to one.</p>
 <h2 id="results">Results</h2>
 <h4 id="brief-overview-of-my-code">Brief overview of my code:</h4>
 <p>I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.</p>
+<p>Note: I know these regression techniques were not taught in Gov50, but I learned them while taking CS109a this semester and wanted to use them in this analysis.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://glmnet.stanford.edu'>glmnet</a></span><span class='op'>)</span></span>
+<span></span>
+<span></span>
+<span><span class='va'>predictor_list</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"age_first_funding_year"</span>, <span class='st'>"funding_rounds"</span>, <span class='st'>"funding_total_usd"</span>, <span class='st'>"length_of_funding"</span>,</span>
+<span>                    <span class='st'>"is_CA"</span>, <span class='st'>"has_VC"</span>, <span class='st'>"has_angel"</span>, <span class='st'>"has_roundA"</span>, <span class='st'>"has_roundB"</span>, <span class='st'>"has_roundC"</span>, <span class='st'>"has_roundD"</span>, <span class='st'>"is_TX"</span>, <span class='st'>"is_MA"</span>, <span class='st'>"is_NY"</span>, <span class='st'>"is_otherstate"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># Calculate class weights bc dataset is imbalanced</span></span>
+<span><span class='va'>class_counts</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/table.html'>table</a></span><span class='op'>(</span><span class='va'>train_data</span><span class='op'>$</span><span class='va'>Acquired</span><span class='op'>)</span></span>
+<span><span class='va'>class_weights</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>class_counts</span><span class='op'>)</span> <span class='op'>==</span> <span class='st'>"0"</span>, <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>class_counts</span><span class='op'>)</span> <span class='op'>/</span> <span class='va'>class_counts</span>, <span class='fl'>1</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>class_weights</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>class_counts</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># Assign weights to each observation </span></span>
+<span><span class='va'>train_weights</span> <span class='op'>&lt;-</span> <span class='va'>class_weights</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/character.html'>as.character</a></span><span class='op'>(</span><span class='va'>train_data</span><span class='op'>$</span><span class='va'>Acquired</span><span class='op'>)</span><span class='op'>]</span></span>
+<span></span>
+<span></span>
+<span><span class='va'>X_train</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span> <span class='op'>-</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>train_data</span><span class='op'>[</span>, <span class='va'>predictor_list</span><span class='op'>]</span><span class='op'>)</span></span>
+<span><span class='va'>y_train</span> <span class='op'>&lt;-</span> <span class='va'>train_data</span><span class='op'>$</span><span class='va'>Acquired</span></span>
+<span><span class='va'>X_test</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>.</span> <span class='op'>-</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>test_data</span><span class='op'>[</span>, <span class='va'>predictor_list</span><span class='op'>]</span><span class='op'>)</span></span>
+<span><span class='va'>y_test</span> <span class='op'>&lt;-</span> <span class='va'>test_data</span><span class='op'>$</span><span class='va'>Acquired</span></span>
+<span></span>
+<span><span class='co'># determine regularization strengths (lamda)</span></span>
+<span><span class='va'>lambda_list</span> <span class='op'>&lt;-</span> <span class='fl'>10</span><span class='op'>^</span><span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>4</span>, <span class='fl'>4</span>, by <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>02138</span><span class='op'>)</span> </span>
+<span><span class='va'>logit_lasso</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://glmnet.stanford.edu/reference/cv.glmnet.html'>cv.glmnet</a></span><span class='op'>(</span><span class='va'>X_train</span>, <span class='va'>y_train</span>, alpha <span class='op'>=</span> <span class='fl'>1</span>, lambda <span class='op'>=</span> <span class='va'>lambda_list</span>, family <span class='op'>=</span> <span class='st'>"binomial"</span>, weights <span class='op'>=</span> <span class='va'>train_weights</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># predict on training &amp; test data</span></span>
+<span><span class='va'>y_train_pred</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>logit_lasso</span>, newx <span class='op'>=</span> <span class='va'>X_train</span>, type <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span></span>
+<span><span class='va'>y_test_pred</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>logit_lasso</span>, newx <span class='op'>=</span> <span class='va'>X_test</span>, type <span class='op'>=</span> <span class='st'>"class"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># Calc. classification accuracies</span></span>
+<span><span class='va'>logit_lasso_train_acc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>y_train_pred</span> <span class='op'>==</span> <span class='va'>y_train</span><span class='op'>)</span></span>
+<span><span class='va'>logit_lasso_test_acc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>y_test_pred</span> <span class='op'>==</span> <span class='va'>y_test</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># print</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='st'>"The intercept and coefficients for the 'logit_lasso' model are:\n"</span><span class='op'>)</span></span></code></pre>
+</div>
 <pre><code>The intercept and coefficients for the &#39;logit_lasso&#39; model are:</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>logit_lasso</span>, s <span class='op'>=</span> <span class='st'>"lambda.min"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
 <pre><code>17 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
                                 s1
 (Intercept)            -0.39462732
@@ -1611,14 +1735,53 @@ is_TX1                 -0.48000766
 is_MA1                  0.30734937
 is_NY1                  0.33362124
 is_otherstate1         -0.49017118</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='st'>"\nThe classification accuracies for 'logit_lasso' are:\n\n"</span><span class='op'>)</span></span></code></pre>
+</div>
 <pre><code>
 The classification accuracies for &#39;logit_lasso&#39; are:</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span><span class='st'>"\tTrain\t%.4f\n"</span>, <span class='va'>logit_lasso_train_acc</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
 <pre><code>    Train   0.6536</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://rdrr.io/r/base/cat.html'>cat</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/sprintf.html'>sprintf</a></span><span class='op'>(</span><span class='st'>"\tTest\t%.4f\n"</span>, <span class='va'>logit_lasso_test_acc</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
 <pre><code>    Test    0.6033</code></pre>
 </div>
 <p>After I determined the coefficients of my LASSO logistic regression model, I ran a bootstrap analysis to estimate the confidence intervals of these coefficients. Computing the confidence intervals for each coefficient, allowed me to determine which coefficients are statistically significant.</p>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sample_fit</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>idx</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/base/with.html'>with</a></span><span class='op'>(</span><span class='va'>data</span>, <span class='op'>{</span></span>
+<span>    <span class='va'>sample</span> <span class='op'>&lt;-</span> <span class='va'>data</span><span class='op'>[</span><span class='va'>idx</span>,<span class='op'>]</span> </span>
+<span>    <span class='va'>sample</span><span class='op'>[</span>, <span class='va'>non_binary_predictors</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/scale.html'>scale</a></span><span class='op'>(</span><span class='va'>sample</span><span class='op'>[</span>, <span class='va'>non_binary_predictors</span><span class='op'>]</span><span class='op'>)</span></span>
+<span>    <span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>.</span><span class='op'>-</span><span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>sample</span><span class='op'>[</span>, <span class='va'>predictor_list</span><span class='op'>]</span><span class='op'>)</span> </span>
+<span>    <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sample</span><span class='op'>$</span><span class='va'>Acquired</span></span>
+<span>    <span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://glmnet.stanford.edu/reference/glmnet.html'>glmnet</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, alpha <span class='op'>=</span> <span class='fl'>1</span>, lambda <span class='op'>=</span> <span class='va'>logit_lasso</span><span class='op'>$</span><span class='va'>lambda.min</span><span class='op'>)</span></span>
+<span>    <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='op'>}</span><span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># Bootstrap to get CIs </span></span>
+<span><span class='va'>coefs</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='cn'>NA</span>, nrow <span class='op'>=</span> <span class='fl'>1000</span>, ncol <span class='op'>=</span> <span class='fl'>17</span><span class='op'>)</span></span>
+<span></span>
+<span></span>
+<span><span class='kw'>for</span><span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='fl'>1000</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='va'>idx</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>train_data</span><span class='op'>)</span>, replace <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span>  <span class='va'>coef</span> <span class='op'>&lt;-</span> <span class='fu'>sample_fit</span><span class='op'>(</span><span class='va'>train_data</span>, <span class='va'>idx</span><span class='op'>)</span></span>
+<span>  <span class='co'># convert coefficients to numeric vector before assigning</span></span>
+<span>  <span class='va'>coefs</span><span class='op'>[</span><span class='va'>i</span>,<span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>coef</span><span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># calc. CIs</span></span>
+<span><span class='va'>cis</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/apply.html'>apply</a></span><span class='op'>(</span><span class='va'>coefs</span>, <span class='fl'>2</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/quantile.html'>quantile</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.025</span>, <span class='fl'>0.975</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='op'>}</span><span class='op'>)</span></span>
+<span></span>
+<span></span>
+<span><span class='va'>cis_adjusted</span> <span class='op'>&lt;-</span> <span class='va'>cis</span><span class='op'>[</span>, <span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>6</span><span class='op'>)</span><span class='op'>]</span></span></code></pre>
+</div>
 </div>
 <h4 id="description-and-interpretation-of-my-regression-output">Description and Interpretation of My Regression Output:</h4>
 <p>I created a table called “LASSO Regression Model Coefficient Outputs and Confidence Intervals table” which displays the coefficient estimations of each predictor variable, the confidence interval of the coefficient and says whether or not it is statistically significant. I examined 15 predictor variables, whose estimated coefficients can be seen in the column entitled “Predictor_Variable.” The larger the magnitude of a coefficient, the larger effect it has on the dependent variable, acquired. The lasso model brought predictors is_CA, and has_angel to zero. This means that whether or not it exists in the state of California, or whether or not it has angel funding, have no impact on a company being acquired or not.</p>
@@ -1630,6 +1793,49 @@ The classification accuracies for &#39;logit_lasso&#39; are:</code></pre>
 The confidence intervals calculated for the coefficients in this analysis are 95% confidence intervals. This means that if we were to repeat this study many times, we would expect the true coefficient value to fall within this range 95% of the time, under the assumption that the model and its assumptions are correct. The alpha level (α) of 0.05 is used in this analysis, representing a 5% risk of concluding that a coefficient is statistically significant when it is not (Type I error).</p>
 <p>It is important to note that statistically significant coefficients from a LASSO regression model should NOT be interpreted causally. In the context of this analysis, statistical significance means that there is evidence that predictors has_roundD, has_roundA, is_otherstate, and has_roundB have an association (either positive or negative) with the response variable, Acquired. However, establishing causality requires doing more analysis. A difference-in-differences analysis or a randomized control study, for example, would control for all unobserved confounders and could help us determine causality. In my analysis, we have determined that correlation exists between statistically significant variables and the response variable, Acquired. We have not, however, determined causation because we have not controlled for confounding that might exist.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://yihui.org/knitr/'>knitr</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># take coefficients from the LASSO model </span></span>
+<span><span class='va'>coefficients_matrix</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>logit_lasso</span>, s <span class='op'>=</span> <span class='st'>"lambda.min"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># extract row names (variable names)</span></span>
+<span><span class='va'>variable_names</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/colnames.html'>rownames</a></span><span class='op'>(</span><span class='va'>coefficients_matrix</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># exclude the intercept and is_CA0 </span></span>
+<span><span class='va'>variable_names</span> <span class='op'>&lt;-</span> <span class='va'>variable_names</span><span class='op'>[</span><span class='va'>variable_names</span> <span class='op'>!=</span> <span class='st'>"(Intercept)"</span> <span class='op'>&amp;</span> <span class='va'>variable_names</span> <span class='op'>!=</span> <span class='st'>"is_CA0"</span><span class='op'>]</span></span>
+<span></span>
+<span><span class='co'># extract corresponding coefficients</span></span>
+<span><span class='va'>original_coefs</span> <span class='op'>&lt;-</span> <span class='va'>coefficients_matrix</span><span class='op'>[</span><span class='va'>variable_names</span>, , drop <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>]</span></span>
+<span></span>
+<span><span class='co'># convert to vector</span></span>
+<span><span class='va'>original_coefs_vector</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>as.vector</a></span><span class='op'>(</span><span class='va'>original_coefs</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># check if lengths match</span></span>
+<span><span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>variable_names</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>original_coefs_vector</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='kw'><a href='https://rdrr.io/r/base/stop.html'>stop</a></span><span class='op'>(</span><span class='st'>"Mismatch in the number of variables and coefficients"</span><span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='va'>ci_df</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/t.html'>t</a></span><span class='op'>(</span><span class='va'>cis_adjusted</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span></span>
+<span><span class='co'># results table</span></span>
+<span><span class='va'>results_table</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span></span>
+<span>  Predictor_Variable <span class='op'>=</span> <span class='va'>variable_names</span>,</span>
+<span>  Coefficient <span class='op'>=</span> <span class='va'>original_coefs_vector</span>,</span>
+<span>  CI_Lower <span class='op'>=</span> <span class='va'>ci_df</span><span class='op'>[</span>, <span class='fl'>1</span><span class='op'>]</span>,  </span>
+<span>  CI_Upper <span class='op'>=</span> <span class='va'>ci_df</span><span class='op'>[</span>, <span class='fl'>2</span><span class='op'>]</span>    </span>
+<span><span class='op'>)</span></span>
+<span></span>
+<span></span>
+<span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>Statistically_Significant</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/with.html'>with</a></span><span class='op'>(</span><span class='va'>results_table</span>, <span class='va'>CI_Lower</span> <span class='op'>*</span> <span class='va'>CI_Upper</span> <span class='op'>&gt;</span> <span class='fl'>0</span><span class='op'>)</span></span>
+<span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>Coefficient</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>Coefficient</span>, <span class='fl'>3</span><span class='op'>)</span></span>
+<span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>CI_Lower</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>CI_Lower</span>, <span class='fl'>3</span><span class='op'>)</span></span>
+<span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>CI_Upper</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>results_table</span><span class='op'>$</span><span class='va'>CI_Upper</span>, <span class='fl'>3</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># the results!!!</span></span>
+<span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span><span class='va'>results_table</span>, caption <span class='op'>=</span> <span class='st'>"LASSO Regression Model Coefficient Outputs and Confidence Intervals"</span>, align <span class='op'>=</span> <span class='st'>'c'</span>, format <span class='op'>=</span> <span class='st'>"markdown"</span><span class='op'>)</span></span></code></pre>
+</div>
 <table>
 <caption><span id="tab:unnamed-chunk-10">Table 1: </span>LASSO Regression Model Coefficient Outputs and Confidence Intervals</caption>
 <colgroup>
@@ -1760,6 +1966,21 @@ The confidence intervals calculated for the coefficients in this analysis are 95
 <h4 id="plot-of-main-analysis">Plot of main analysis:</h4>
 <p>The plot visually reinforces the information presented in the regression table by displaying the coefficients of the predictors along with their confidence intervals, and highlighting which coefficients are statistically significant. As mentioned above, has_roundD, has_roundA, is_otherstate, and has_roundB are the only statistically significant predictors. I was surprised to see how little of an effect the total amount funding a company gets has on its acquisition potential. Since, this is not a statistically significant predictor, we can’t say what type of effect it has for certain, but based on this initial analysis, it seems like the amount of total funding a company gets isn’t THAT determinate of its potential to be acquired.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>results_table</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>Predictor_Variable</span>, y <span class='op'>=</span> <span class='va'>Coefficient</span>, fill <span class='op'>=</span> <span class='va'>Statistically_Significant</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"identity"</span>, position <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/position_dodge.html'>position_dodge</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_linerange.html'>geom_errorbar</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>ymin <span class='op'>=</span> <span class='va'>CI_Lower</span>, ymax <span class='op'>=</span> <span class='va'>CI_Upper</span><span class='op'>)</span>, width <span class='op'>=</span> <span class='fl'>0.25</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_manual.html'>scale_fill_manual</a></span><span class='op'>(</span>values <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"FALSE"</span> <span class='op'>=</span> <span class='st'>"red"</span>, <span class='st'>"TRUE"</span> <span class='op'>=</span> <span class='st'>"blue"</span><span class='op'>)</span>,</span>
+<span>                    name <span class='op'>=</span> <span class='st'>"Statistically\nSignificant?"</span>,</span>
+<span>                    labels <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"No"</span>, <span class='st'>"Yes"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>axis.text.x <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>vjust <span class='op'>=</span> <span class='fl'>0.6</span>, size <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span>,</span>
+<span>        plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"LASSO Regression Coefficients with Confidence Intervals"</span>,</span>
+<span>       x <span class='op'>=</span> <span class='st'>"Predictors"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='st'>"Coefficient Value"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span></span></code></pre>
+</div>
 <p><img src="index_files/figure-html5/unnamed-chunk-11-1.png" width="624" /></p>
 </div>
 <h2 id="conclusion">Conclusion</h2>
