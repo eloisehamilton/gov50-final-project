@@ -9,13 +9,33 @@ output:
 
 
 
-## Project thoughts
+## Introduction
 
-I am interested in exploring data related to what predicts the success of start ups and new companies. 
+What factors predict the success of a startup? The success of a startup is frequently gauged by its acquisition status. Being acquired generally signifies market validation of the startup's offerings, suggesting that its products, services, or technology have met critical approval. Furthermore, an acquisition implies that the acquiring company sees value in what the startup offers and believes it can further scale or monetize its value. Many times, when a startup is acquired, it increases in value. However, how do we predict whether or not a company will be acquired? What factors matter? 
 
-Data source and my proposal: 
+I hypothesize that when a company receives funding in early rounds of its fund raising process, it is more likely to be acquired. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. I believe this research project is interesting because one in ten startups fail. However, those that succeed have the potential to dramatically transform the world. Successful startups can evolve into multi-billion-dollar businesses, introducing groundbreaking innovations and reshaping industries. Pinpointing the factors that contribute to this success is vital for investors to make informed decisions and for startups to align their strategies for higher chances of success. 
 
-What factors predict the the success of a start up? The success of a start up can be measured by whether the company gets acquired or not. When a larger company acquires a startup, it often signifies that the startup's product, service, or technology has been validated in the market. The acquiring company sees value in what the startup offers and believes it can further scale or monetize that value. However, what factors predict whether or not a company will be acquired? Does pre-seed funding determine acquisition potential? Or is it the caliber of the founding team? Using a dataset I found on Kaggle.com, I will attempt to answer this question. This dataset comes with a number of predictors from funding during different rounds, types of funding, relationships the founding team has, the age a company was when it recieved funding, number of "milestones" a company had. It also has a binary variable in the dataset representing whether and acquisition occurred or not. My hypothesis is that funding in early rounds of a company's money raising processes determine the success and acquisition potential of this given company. Early-round funding often signifies that investors see potential in the startup's idea, market opportunity, and founding team. This validation can attract further attention and resources which could ultimately lead to a successful acquisition. This explanatory variable is called  has_roundA and is binary. As mentioned before, the outcome variable is as called status(acquired/closed) which is categorical (the target variable, if a startup is ‘acquired’ by some other organization, means the startup succeed). An observed pattern that would support my hypothesis is companies that have preseed funding are also the companies with a high number of acquisitions. Here is the link for my data: https://www.kaggle.com/datasets/manishkc06/startup-success-prediction/data 
+## Data Section 
+
+I am using a dataset I discovered on Kaggle.com. This dataset has 923 observations and 50 variables. Each observation is associated with a different startup. The binary variables in this dataset have been categorized through expert encoding, a process where professionals systematically categorize data based on domain expertise. Although it is not explicitly stated, I assume that the quantitative variables in this dataset are derived from publicly available data about each startup. 
+The key dependent variable in my analysis is 'Acquired'. This is a binary indicator coded by experts, where a value of 1 signifies a startup was acquired, and 0 indicates it closed down. The key independent variables include both quantitative and binary variables. The quantitative variables, such as 'age_first_funding_year', 'funding_rounds', 'funding_total_usd', and 'length_of_funding', likely reflect objective, numerical data about the startups. The binary variables, including 'has_VC', 'has_angel', 'has_roundA' through 'has_roundD', and state-specific indicators, encoded by experts, denoting specific characteristics of each startup.
+
+The key independent variables are are as follow: 
+“age_first_funding_year” – quantitative variable that measures the age a start up is when it first receives funding 
+“funding_rounds” – quantitative variable that measures the number of funding round a startup has 
+“funding_total_usd” – quantitative variable that measures the total amount of money in USD a company has raised
+“length_of_funding” – quantitative variable that measures how the number of years a company has actively been receiving funding 
+“has_VC” – binary variable equal to one if a company has VC funding and zero if not 
+“has_angel” – binary variable equal to one if a company has angel funding and zero if not. 
+"has_roundA" – binary variable equal to one if a company has series A funding and zero if not. 
+"has_roundB" – binary variable equal to one if a company has series B funding and zero if not. 
+"has_roundC" – binary variable equal to one if a company has series C funding and zero if not. 
+"has_roundD" –  binary variable equal to one if a company has series D funding and zero if not. 
+“is_CA” - binary variable equal to one if the company is in CA and zero if not 
+"is_TX" - binary variable equal to one if the company is in TX and zero if not 
+"is_MA" - binary variable equal to one if the company is in MA and zero if not 
+"is_NY" - binary variable equal to one if the company is in NY and zero if not 
+"is_otherstate" - binary variable equal to one if the company is in another state other than CA, TX, MA, or NY and zero if not.  
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(readr)
@@ -23,7 +43,7 @@ library(tidyverse)
 library(dplyr)
 
 #import data
-startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50/gov50-final-project/startupdata.csv")
+startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50 2/gov50-final-project/startupdata.csv")
 
 ```
 
@@ -32,7 +52,7 @@ startupdata <- read_csv("/Users/elliehamilton/Desktop/Gov50/gov50-final-project/
 startupdata <- startupdata |>
   mutate(length_of_funding = age_last_funding_year - age_first_funding_year)
 
-
+startupdata
 ```
 
 
@@ -87,24 +107,13 @@ startupdata <- startupdata |>
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(caret)
 
-# Set seed for reproducibility
-set.seed(121)
+set.seed(02138)
 
-# Load data
-# Ensure to replace "path/to/your/data.csv" with the actual path to your dataset
-
-# Split data into training and testing sets
-# Assuming 'Acquired' is your binary response variable
+# Split data into training / testing set
 splitIndex <- createDataPartition(startupdata$Acquired, p = 0.80, list = FALSE, times = 1)
-
-# Creating training and testing sets
 train_data <- startupdata[splitIndex, ]
 test_data <- startupdata[-splitIndex, ]
 
-# Print the dimensions of the original and split datasets
-#print(dim(startupdata))
-#print(dim(train_data))
-#print(dim(test_data))
 
 # Separate X (predictors) and y (response)
 X_train <- train_data %>% dplyr::select(-Acquired)
@@ -115,39 +124,6 @@ y_test <- test_data$Acquired
 
 ```
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-# and 'Acquired' is your binary response variable
-
-# Fit logistic regression model
-model <- glm(Acquired ~ age_first_funding_year + length_of_funding + funding_total_usd, 
-                data = train_data, 
-                family = binomial())
-
-# Extract model coefficients
-model_intercept <- coef(model)[1]
-model_coef_age_first_funding_year <- coef(model)[2]
-model_coef_length_of_funding <- coef(model)[3]
-model_coef_funding_total_usd <- coef(model)[4]
-
-# Make predictions on training and test data
-y_train_pred <- predict(model, newdata = train_data, type = "response") > 0.5
-y_test_pred <- predict(model, newdata = test_data, type = "response") > 0.5
-
-# Calculate classification accuracies
-acc_train_logit2_3 <- mean(y_train_pred == train_data$Acquired)
-acc_test_logit2_3 <- mean(y_test_pred == test_data$Acquired)
-
-# Print the results
-#cat("The intercept and coefficients for the model are:\n")
-#cat(sprintf("\t%-20s %7.4f\n", "intercept", model_intercept))
-#cat(sprintf("\t%-20s %7.4f\n", "age_first_funding_year", model_coef_age_first_funding_year))
-#cat(sprintf("\t%-20s %7.4f\n", "length_of_funding", model_coef_length_of_funding))
-#cat(sprintf("\t%-20s %7.4f\n", "funding_total_usd", model_coef_funding_total_usd))
-
-#cat("\nThe classification accuracies for 'logit2_3' are:\n\n")
-#cat(sprintf("\tTrain\t%.4f\n", acc_train_logit2_3))
-#cat(sprintf("\tTEST\t%.4f\n", acc_test_logit2_3))
-```
 
 
 
@@ -168,153 +144,185 @@ test_data_scaled <- scale(test_data[non_binary_predictors], center = attr(train_
 train_data[non_binary_predictors] <- train_data_scaled
 test_data[non_binary_predictors] <- test_data_scaled
 
+
 ```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+acquired_counts <- table(startupdata$Acquired)
+ggplot(data = as.data.frame(acquired_counts), aes(x = Var1, y = Freq)) +
+  geom_bar(stat = "identity") +
+  xlab("Acquired Status") +
+  ylab("Count") +
+  ggtitle("Distribution of Startup Acquisition Status")
+```
+  The above a bar plot describes the dependent variable, Acquired. Because Acquired is binary, this plot counts the frequency of observations in the dataset that were Acquired (Acquired = 1) or Closed (Acquired = 0). As we can see, this variable is unbalanced. There are far more companies in the dataset that have been acquired than have closed down. Therefore, before doing a LASSO regression analysis, I must weight the dependent variables that are equal to zero more than those equal to one.
 
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-# Load necessary library
 library(glmnet)
 
-# Assuming your dataset is stored in 'train_data' and 'test_data'
 
-# Prepare the dataset
 predictor_list <- c("age_first_funding_year", "funding_rounds", "funding_total_usd", "length_of_funding",
-                    "is_CA", "is_software", "has_VC", "has_angel", "has_roundD", "is_TX")
+                    "is_CA", "has_VC", "has_angel", "has_roundA", "has_roundB", "has_roundC", "has_roundD", "is_TX", "is_MA", "is_NY", "is_otherstate")
 
-# Convert to model matrix
+# Calculate class weights bc dataset is imbalanced
+class_counts <- table(train_data$Acquired)
+class_weights <- ifelse(names(class_counts) == "0", max(class_counts) / class_counts, 1)
+names(class_weights) <- names(class_counts)
+
+# Assign weights to each observation 
+train_weights <- class_weights[as.character(train_data$Acquired)]
+
+
 X_train <- model.matrix(~ . - 1, data = train_data[, predictor_list])
 y_train <- train_data$Acquired
 X_test <- model.matrix(~ . - 1, data = test_data[, predictor_list])
 y_test <- test_data$Acquired
 
-# Define the regularization strengths
+# Determine regularization strengths
 lambda_list <- 10^seq(-4, 4, by = 1)
 
-# Fit Lasso logistic regression
-logit_lasso <- cv.glmnet(X_train, y_train, alpha = 1, lambda = lambda_list, family = "binomial")
+set.seed(02138) 
+logit_lasso <- cv.glmnet(X_train, y_train, alpha = 1, lambda = lambda_list, family = "binomial", weights = train_weights)
 
-# Predict on training and test data
+# Predict on training & test data
 y_train_pred <- predict(logit_lasso, newx = X_train, type = "class")
 y_test_pred <- predict(logit_lasso, newx = X_test, type = "class")
 
-# Calculate classification accuracies
+# Calc. classification accuracies
 logit_lasso_train_acc <- mean(y_train_pred == y_train)
 logit_lasso_test_acc <- mean(y_test_pred == y_test)
 
-# Print the results
-#cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
-#print(coef(logit_lasso, s = "lambda.min"))
+# Print
+cat("The intercept and coefficients for the 'logit_lasso' model are:\n")
+print(coef(logit_lasso, s = "lambda.min"))
 
-#cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
-#cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
-#cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
-```
-## Visualizations 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(startupdata, aes(x = age_first_funding_year, y = Acquired)) +
-    geom_point(alpha = 0.5) +  # Plot the points
-    geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE) +
-    ylab("Probability of Being Acquired") +
-    xlab("Age at First Funding (Years)") +
-    ggtitle("Relationship Between Age at First Funding and Likelihood of Acquisition") +
-    theme_minimal()
-```
-This visualization attempts to answer my research question: what factors predict whether or not a company will be acquired? As displayed by the graph, we see a negative relationship between the age of a startup at first funding and its chances of being acquired: the older startups are when they recieve funding for the first time, the less likely they are to be acquired, according to this graph. This is visualization is in line with my hypothesis which states that the younger start ups are when they first receive funding, they are more likely to be acquired. 
-
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-# Creating a summary dataset for plotting
-summary_data <- startupdata %>%
-    group_by(has_roundD) %>%
-    summarise(Proportion_Acquired = mean(Acquired)) %>%
-    mutate(has_roundD = ifelse(has_roundD == 1, "Reached Round D", "Did Not Reach Round D"))
-
-# Plot
-ggplot(summary_data, aes(x = has_roundD, y = Proportion_Acquired, fill = has_roundD)) +
-    geom_bar(stat = "identity", position = position_dodge()) +
-    ylab("Proportion of Startups Acquired") +
-    xlab("Funding Round D Status") +
-    ggtitle("Impact of Reaching Funding Round D on Startup Acquisition") +
-    scale_fill_manual(values = c("blue", "red")) +
-    theme_minimal()
-```
-This visualization also attempts to answer my research question. Based on the data and the visualization, start ups that have reached series D funding are slightly more likely to be acquired. This provides some evidence behind what factors contribute to a start up being acquired. 
-
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-
-result <- startupdata |>
-  group_by(Acquired) |>
-  summarize(
-    avg_age_first_funding = mean(age_first_funding_year),
-    avg_funding = mean(funding_total_usd),
-    avg_length_funding = mean(length_of_funding)
-  )
-
+cat("\nThe classification accuracies for 'logit_lasso' are:\n\n")
+cat(sprintf("\tTrain\t%.4f\n", logit_lasso_train_acc))
+cat(sprintf("\tTest\t%.4f\n", logit_lasso_test_acc))
 ```
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+sample_fit <- function(data, idx) {
+  with(data, {
+    sample <- data[idx,] 
+    sample[, non_binary_predictors] <- scale(sample[, non_binary_predictors])
+    X <- model.matrix(~.-1, data = sample[, predictor_list]) 
+    y <- sample$Acquired
+    fit <- glmnet(X, y, alpha = 1, lambda = logit_lasso$lambda.min)
+    return(coef(fit))
+  })
+}
 
-startupdata <- startupdata |>
-  mutate(
-    VC_Funding = ifelse(has_VC == 1, "Has VC Funding", "No VC Funding")
-  )
+# Bootstrap to get CIs 
+coefs <- matrix(NA, nrow = 1000, ncol = 17)
 
-# Create the table
-acquired_vc_table <- startupdata |>
-  group_by(status, VC_Funding) |>
-  summarize(count = n(), .groups = "drop") |>
-   mutate(prop = count / sum(count)) |>
-  select(-count) |>
-  pivot_wider(
-    names_from = status,
-    values_from = prop )
+
+for(i in 1:1000) {
+  idx <- sample(nrow(train_data), replace = TRUE)
+  coef <- sample_fit(train_data, idx)
+  # Convert coefficients to numeric vector before assigning
+  coefs[i,] <- as.numeric(coef)
+}
+
+# Calculate confidence intervals
+cis <- apply(coefs, 2, function(x) {
+  quantile(x, c(0.025, 0.975))
+})
 
 ```
+## Results
+
+Brief overview of my code: 
+
+  I ran a LASSO regression model on my data to determine the significance of each key independent variable on the response variable, Acquired. Before modeling, I first had to scale my quantitative variables to ensure they could be used in a model alongside binary variables. Next, to ensure that the model did not bias the majority class in the outcome variable, I computed class weights and applied them to my model to avoid having a model that overly favored the majority class. Then, I applied LASSO regression to the training data, which reduced the coefficients of less important variables to zero. I then validated my model’s performance by calculating its training and testing accuracy. My lasso regression model outputs coefficients for each independent variable which estimate the impact of independent variable has on the likelihood that the dependent variable, Acquired, is equal to 1.  
+
+  After I determined the coefficients of my LASSO logistic regression model, I ran a bootstrap analysis to estimate the confidence intervals of these coefficients. Computing the confidence intervals for each coefficient, allowed me to determine which coefficients are statistically significant. 
+
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+# Extract coefficients from the LASSO model
+lasso_coefs <- coef(logit_lasso, s = "lambda.min")
 
-data_long <- acquired_vc_table %>%
-  pivot_longer(cols = -VC_Funding, names_to = "Status", values_to = "prop")
+# Convert to a regular vector and exclude the intercept
+original_coefs <- as.vector(lasso_coefs)[-1] # Drop the first element (intercept)
 
-# Plotting the data
-ggplot(data_long, aes(x = Status, y = prop, fill = VC_Funding)) +
-  geom_bar(stat="identity", position="dodge") +
-  labs(title = "Proportion of VC Funding by Status",
-       y = "Proportion", x = "Company Status") +
+# Ensure the lengths of var_names and original_coefs match
+if (length(var_names) != length(original_coefs)) {
+  stop("Mismatch in the number of variables and coefficients")
+}
+# Calculate the confidence intervals for each coefficient
+cis <- apply(coefs[, -1], 2, function(x) { # Excluding intercept from the bootstrapped coefficients
+  quantile(na.omit(x), c(0.025, 0.975))  
+})
+
+# Convert the confidence intervals to a data frame
+ci_df <- as.data.frame(t(cis))
+
+# Create a results table
+results_table <- data.frame(
+  Predictor_Variable = var_names,
+  Coefficient = original_coefs,
+  CI_Lower = ci_df[, 1],
+  CI_Upper = ci_df[, 2]
+)
+
+results_table$Statistically_Significant <- with(results_table, CI_Lower * CI_Upper > 0)
+results_table$Coefficient <- round(results_table$Coefficient, 3)
+results_table$CI_Lower <- round(results_table$CI_Lower, 3)
+results_table$CI_Upper <- round(results_table$CI_Upper, 3)
+# View the results
+kable(results_table, caption = "LASSO Regression Model Coefficient Outputs and Confidence Intervals", align = 'c', format = "markdown")
+```
+Description and Interpretation of My Regression Output:
+
+  I created a table called “LASSO Regression Model Coefficient Outputs and Confidence Intervals table” which displays the coefficient estimations of each predictor variable, the confidence interval of the coefficient and says whether or not it is statistically significant. I examined 15 predictor variables, whose estimated coefficients can be seen in the column entitled “Predictor_Variable.” The larger the magnitude of a coefficient, the larger effect it has on the dependent variable, acquired. The lasso model brought predictors funding_rounds, length_of_funding, is_CA, and has_angel to zero. This means that the number of funding rounds a company has, how long it has had funding for, whether or not it exists in the state of California, or whether or not it has angel funding, have no impact on a company being acquired or not. 
+  From this table, we see that only three predictors out of the 15 are statistically significant. These include has_roundA, has_roundD, and is_otherstate. Out of these three, the strongest predictor of Acquired is has_roundD, with a coefficient of 1.130, indicating a substantial positive impact on a company being acquired. If a company is able to make it to series D funding, it is more likely to be acquired. Holding all other variables constant, having completed Round D funding is associated with an increase in the log odds of being 'Acquired' by 1.130 units. This coefficient has a confidence interval from 0.075 to 0.270. Because zero is not included in this range, this variable is statistically significant.
+
+  The second strongest predictor of Acquired is has_roundA, with a coefficient of 0.545. This indicates that if a company is able to secure series A funding– which is one of the earliest forms of funding a company can get – it is more likely to be acquired.  Holding all other variables constant, having completed Round A funding is associated with an increase in the log odds of being 'Acquired' by 0.545 units. This coefficient’s confidence interval ranges from 0.031 to 0.183, not including zero, suggesting a strong positive influence on the outcome. Because zero is not included in this range, this variable is statistically significant. 
+
+  This outcome supports my hypothesis that the earlier a company is able to secure funding, the more likely it is to be acquired. However, given that a company’s ability to maintain funding until the D round, makes an even larger impact on a company being acquired, we see that early funding is not the only thing that matters. In fact, even earlier forms of financing, like angel funding (has_angel), is not a statistically significant predictor.
+
+  The third strongest predictor of Acquired is is_otherstate, with a coefficient of -0.505. This indicates that if a startup is located in a state other than California, Massachusetts, New York or Texas, it is less likely to be acquired. Holding all other variables constant, if is_otherstate is equaling 1 is associated with a decrease in the log odds of being ‘Acquired’ by 0.505 units. This negative coefficient is statistically significant since its confidence interval is entirely below zero (-0.207 to -0.036), suggesting a negative association with the outcome, acquired.
+
+  All other predictors have confidence intervals that include zero, marking them as statistically non-significant according to this analysis. This means we cannot confidently say they have an effect on whether or not a company is acquired , given the data. 
+It is important to note that statistically significant coefficients from a LASSO regression model should NOT be interpreted causally. In the context of this analysis, statistical significance means that there is evidence that predictors has_roundD, has_roundA, and is_otherstate have an association (either positive or negative) with the response variable, Acquired. However, establishing causality requires doing more analysis. A difference-in-differences analysis or a randomized control study, for example, would control for all unobserved confounders and could help us determine causality. In my analysis, we have determined that correlation exists between statistically significant variables and the response variable, Acquired. We have not, however, determined causation because we have not controlled for confounding that might exist. 
+
+Plot of main analysis: 
+
+  The below plot visually reinforces the information presented in the regression table by displaying the coefficients of the predictors along with their confidence intervals, and highlighting which coefficients are statistically significant. As mentioned above, has_roundD, has_roundA, and is_otherstate are the only statistically significant predictors. 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(results_table, aes(x = Variable, y = Original_Coefficient, fill = Statistically_Significant)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.25) +
+  scale_fill_manual(values = c("FALSE" = "red", "TRUE" = "blue"),
+                    name = "Statistically\nSignificant?",
+                    labels = c("No", "Yes")) +
   theme_minimal() +
-  scale_fill_brewer(palette = "Set2") 
- 
-```
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-startupdata <- startupdata |>
-  mutate(
-    Angel_Funding = ifelse(has_angel == 1, "Has Angel Funding", "No Angel Funding")
-  )
+  theme(axis.text.x = element_text(vjust = 0.6, size = 12),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(title = "LASSO Regression Coefficients with Confidence Intervals",
+       x = "Predictors",
+       y = "Coefficient Value") +
+  coord_flip()  # Flip the coordinates if horizontal layout is preferred
 
-# Create the table
-acquired_angel_table <- startupdata |>
-  group_by(status, Angel_Funding) |>
-  summarize(count = n(), .groups = "drop") |>
-   mutate(prop = count / sum(count)) |>
-  select(-count) |>
-  pivot_wider(
-    names_from = status,
-    values_from = prop )
 ```
+## Conclusion 
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-data_long_angel <- acquired_angel_table %>%
-  pivot_longer(cols = -Angel_Funding, names_to = "Status", values_to = "prop")
+Part (i) 
 
-# Plotting the data
-ggplot(data_long_angel, aes(x = Status, y = prop, fill = Angel_Funding)) +
-  geom_bar(stat="identity", position="dodge") +
-  labs(title = "Proportion of Angel Funding by Status",
-       y = "Proportion", x = "Company Status") +
-  theme_minimal() +
-  scale_fill_brewer(palette = "Set2") 
-```
+  In my analysis, I have found that variables has_roundD, has_roundA, and is_otherstate have statistically significant associations with the response variable, Acquired. My results show that when a startup receives funding at the series D stage, which is one of the last stages a company can receive funding from a venture capital firm before IPOing, it is more likely to be acquired. Intuitively this makes sense, given that many companies that were bound to fail would have done so before reaching series D. Thus, the companies that make it this far are more likely to have proven track records or a market presence, which means they are more likely to be acquired. 
+  
+  My results also show that when a startup receives funding at the series A stage, it is more likely to be acquired. In my dataset, series A funding is the earliest measured point a company could have received funding. This finding supports my hypothesis that companies who receive funding early on in their fundraising processes, are more likely to be acquired. However, as mentioned above, my hypothesis was not entirely correct, as it appears that receiving funding at later series, notably series D, is even more critical.
+  
+  My results also indicate that when a startup is located outside of innovation hubs like California, New York, Massachusetts, and Texas, they are less likely to be acquired. This finding initially surprised me, but makes sense intuitively. Start ups outside of these known innovation hubs likely have less access to sources of funding because of a lower concentration of venture capital firms and investors in these areas, which might make it difficult to drive growth and ultimately be acquired. It is also likely that there are fewer networking opportunities outside of these cities, perhaps making it difficult to connect with potential partners or people who can facilitate deals. 
+
+Part (ii) 
+
+  There are several limitations in this analysis and threats to inference. First of all, there were several cases of missingness in my dataset. I imputed values for these missing numbers by taking the median of quantitative variables and the mode for categorical variables. However, I assumed that data was missing completely at random. If this was not the case, and the missingness instead related to other observed data or the missing data itself, ignoring these relationships may have skewed my analysis. Furthermore, while LASSO helped in variable selection by penalizing less important variables, there could still be confounding variables that are not included in the dataset. These unmeasured confounders can bias the estimated relationships. If I have more time and money, I would try to collect more comprehensive data to include potential confounders and apply causal inference techniques to better adjust for these. In addition, my current analysis does not establish causation. The statistically significant associations found by my LASSO model do not imply that the predictors cause the outcome. If I had more money and time I would design a randomized control trial to measure the factors that contribute to a start up’s acquisition more precisely.  
 
